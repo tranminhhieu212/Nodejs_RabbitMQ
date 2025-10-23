@@ -17,15 +17,34 @@ const messageService = {
       const { channel, connection } = await connectToRabbitMQ();
       const notificationQueue = "notification-queue";
 
-      setTimeout(() => {
-        channel.consume(notificationQueue, (msg) => {
+      // setTimeout(() => {
+      //   channel.consume(notificationQueue, (msg) => {
+      //     console.log(
+      //       `[x] Received ${msg.content.toString()} - Normal Exchange`
+      //     );
+      //   }, {
+      //     noAck: true
+      //   });
+      // }, 5000);
+
+      channel.consume(notificationQueue, (msg) => {
+        try {
+          const test_number = Math.random();
+          console.log(test_number);
+          if (test_number < 0.8) {
+            throw new Error("Error");
+          }
           console.log(
             `[x] Received ${msg.content.toString()} - Normal Exchange`
           );
-        }, {
-          noAck: true
-        });
-      }, 5000);
+          channel.ack(msg);
+        } catch (error) {
+          channel.nack(msg, false, false);
+          // nack : nagetive ack
+          // param 2 : do you want to requeue the message
+          // pramm 3 : do you want to reject all the messages
+        }
+      });
     } catch (error) {
       console.log(error);
     }
@@ -44,16 +63,26 @@ const messageService = {
       });
 
       const queueResult = await channel.assertQueue(notificationHandlerQueue, {
-        exclusive: false
+        exclusive: false,
       });
 
-      await channel.bindQueue(queueResult.queue, notificationRExchangeDLX, notificationRoutingKeyDLX);
+      await channel.bindQueue(
+        queueResult.queue,
+        notificationRExchangeDLX,
+        notificationRoutingKeyDLX
+      );
 
-      channel.consume(queueResult.queue, (msg) => {
-        console.log(`[x] This notification for hotfix ${msg.content.toString()} - Fail Exchange`);
-      }, {
-        noAck: true
-      });
+      channel.consume(
+        queueResult.queue,
+        (msg) => {
+          console.log(
+            `[x] This notification for hotfix ${msg.content.toString()} - Fail Exchange`
+          );
+        },
+        {
+          noAck: true,
+        }
+      );
     } catch (error) {
       console.log(error);
     }

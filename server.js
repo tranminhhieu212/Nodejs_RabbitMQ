@@ -10,5 +10,5 @@ const queueName = "test-queue";
 //   .catch((err) => console.log(err));
 
 
-consumerToQueueNormal().then(() => console.log("Consumer started - normal")).catch((err) => console.log(err));
-consumerToQueueFail().then(() => console.log("Consumer started fail")).catch((err) => console.log(err));
+consumerToQueueNormal().then(() => console.log("Normal Consumer started")).catch((err) => console.log(err));
+consumerToQueueFail().then(() => console.log("Hotfix Consumer started")).catch((err) => console.log(err));
